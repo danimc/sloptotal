@@ -193,6 +193,12 @@ _ENGINE_COST = {
 }
 
 
+def _has_every_engine(report) -> bool:
+    """A report cached before an engine was registered lacks it: re-run, do not hide it."""
+    names = {r.engine_name for r in report.engine_results}
+    return all(engine.name in names for _, engine in _engines)
+
+
 def engine_order(text: str) -> list[tuple[str, object]]:
     """_engines in the order they are queued: the cheap ones, then the models
     the overall score depends on for this text, then the rest, the slowest
@@ -334,7 +340,7 @@ async def start_analysis(
     if CACHE_ENABLED:
         for tag in (CALIBRATION_VERSION, FAST_TAG) if fast else (CALIBRATION_VERSION,):
             cached_report = await get_report_by_hash(text_hash, tag)
-            if cached_report and is_cacheable_report(cached_report):
+            if cached_report and is_cacheable_report(cached_report) and _has_every_engine(cached_report):
                 log.debug(f"Cache hit for hash {text_hash[:16]}...")
                 return cached_report.id, True
 
@@ -626,7 +632,7 @@ async def _analyze_text_inner(
     # Check cache first
     if CACHE_ENABLED:
         cached_report = await get_report_by_hash(text_hash, CALIBRATION_VERSION)
-        if cached_report and is_cacheable_report(cached_report):
+        if cached_report and is_cacheable_report(cached_report) and _has_every_engine(cached_report):
             log.debug(f"Cache hit for API request (hash {text_hash[:16]}...)")
             return cached_report
 
