@@ -153,6 +153,12 @@ def _preload_models():
                 "_load_model",
             ),
         ]
+        from app.engines import classifier_revisor_es
+
+        if classifier_revisor_es.AVAILABLE:
+            loaders.append(
+                ("Revisor ES mmBERT", "app.engines.classifier_revisor_es", "_load_model")
+            )
 
         import importlib
 

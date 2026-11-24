@@ -44,6 +44,7 @@ from app.engines.classifier_chatgpt import ClassifierChatGPTEngine
 from app.engines.classifier_desklib import ClassifierDesklibEngine
 from app.engines.classifier_e5 import ClassifierE5Engine
 from app.engines.classifier_fakespot import ClassifierFakespotEngine
+from app.engines import classifier_revisor_es
 from app.engines.classifier_openai import ClassifierOpenAIEngine
 from app.engines.classifier_remodetect import ClassifierReMoDetectEngine
 from app.engines.classifier_superannotate import ClassifierSuperAnnotateEngine
@@ -162,6 +163,10 @@ _engines = [
     ("readability", _readability_engine),
     ("sentiment", _sentiment_engine),
 ]
+if classifier_revisor_es.AVAILABLE:
+    _engines.append(
+        ("classifier_revisor_es", classifier_revisor_es.ClassifierRevisorEsEngine())
+    )
 
 # Regex and counting engines: they finish in milliseconds, so they go first and
 # the report shows activity at once instead of waiting behind the models.
@@ -178,6 +183,7 @@ _ENGINE_COST = {
     "classifier_remodetect": 4,
     "binoculars": 3,
     "fast_detectgpt": 3,
+    "classifier_revisor_es": 3,
     "classifier_tmr": 2,
     "classifier_fakespot": 2,
     "classifier_openai": 2,
