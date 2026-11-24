@@ -164,9 +164,9 @@ _engines = [
     ("sentiment", _sentiment_engine),
 ]
 if classifier_revisor_es.AVAILABLE:
-    _engines.append(
-        ("classifier_revisor_es", classifier_revisor_es.ClassifierRevisorEsEngine())
-    )
+    _revisor_es_engine = classifier_revisor_es.ClassifierRevisorEsEngine()
+    _engines.append(("classifier_revisor_es", _revisor_es_engine))
+    _quick_engines.append(("classifier_revisor_es", _revisor_es_engine))
 
 # Regex and counting engines: they finish in milliseconds, so they go first and
 # the report shows activity at once instead of waiting behind the models.
