@@ -36,6 +36,7 @@ from app.schemas import (
     BatchUrlRequest,
     FeedbackRequest,
     SiteScanRequest,
+    SentenceRequest,
     SnippetBatchRequest,
     UrlScanRequest,
 )
@@ -657,3 +658,32 @@ async def api_scan_stats():
 async def api_engines():
     """Return metadata for all detection engines."""
     return get_engine_list_rich()
+
+
+@router.post(
+    "/sentence-score",
+    tags=["Analysis"],
+    summary="Per-sentence Spanish detector (revisor-textos)",
+)
+async def api_sentence_score(req: SentenceRequest):
+    """[P(ai), P(polished)] for each sentence of one paragraph, read in context.
+
+    503 when the model folder is missing: an absent model must not answer zeros.
+    """
+    from app.engines import sentences_revisor_es as sres
+
+    if not sres.available():
+        return JSONResponse(
+            {"error": f"No sentence model in {sres.MODEL_DIR}"}, status_code=503
+        )
+    sentences = [s.strip() for s in req.sentences]
+    if not sentences or not all(sentences) or len(sentences) > 200:
+        return JSONResponse(
+            {"error": "Send 1 to 200 non-empty sentences."}, status_code=400
+        )
+    try:
+        scores = await asyncio.to_thread(sres.score, sentences)
+        return {**sres.model_info(), "scores": scores}
+    except Exception as e:
+        log.error(f"Sentence score failed: {e}", exc_info=True)
+        return JSONResponse({"error": "Analysis failed"}, status_code=500)

@@ -44,6 +44,10 @@ class FeedbackRequest(BaseModel):
     }
 
 
+class SentenceRequest(BaseModel):
+    sentences: list[str]
+
+
 class AnalyzeRequest(BaseModel):
     url: str | None = None
     text: str | None = None
